@@ -5,16 +5,15 @@ import { Window } from "./window.js";
 
 export class Pieces {
     private chessBoard: Array<Array<string | null>> = [
-        ["R", "N", "B", "Q", "K", "B", "N", "R"],
-        ["P", "P", "P", "P", "P", "P", "P", "P"],
-        [null, null, null, null, null, null, null, null],
-        [null, null, null, null, null, null, null, null],
-        [null, null, null, null, null, null, null, null],
-        [null, null, null, null, null, null, null, null],
+        ["r", "n", "b", "q", "k", "b", "n", "r"],
         ["p", "p", "p", "p", "p", "p", "p", "p"],
-        ["r", "n", "b", "q", "k", "b", "n", "r"]
-    ];
-    
+        [null, null, null, null, null, null, null, null],
+        [null, null, null, null, null, null, null, null],
+        [null, null, null, null, null, null, null, null],
+        [null, null, null, null, null, null, null, null],
+        ["P", "P", "P", "P", "P", "P", "P", "P"],
+        ["R", "N", "B", "Q", "K", "B", "N", "R"]
+    ]
 
     private translateLetterToString: Record<string, string> = {
         'k': 'black_king',
