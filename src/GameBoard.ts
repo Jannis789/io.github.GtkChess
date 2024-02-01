@@ -21,11 +21,11 @@ export class GameBoard {
 
                 context.add_class((col % 2 === row % 2) ? 'dark_tile' : 'light_tile');
 
-                const className: string =   (col > 7 && col < 0 && row > 7 && row < 0) ? 'no_border' :
-                    (col === 0 && row === 0) ? 'border_tl' :
-                        (col === 7 && row === 0) ? 'border_tr' :
-                            (col === 0 && row === 7) ? 'border_bl' :
-                                (col === 7 && row === 7) ? 'border_br' : '';
+                const className: string =
+                        (col === 0 && row === 0) ? 'border_tl' :
+                            (col === 7 && row === 0) ? 'border_tr' :
+                                (col === 0 && row === 7) ? 'border_bl' :
+                                    (col === 7 && row === 7) ? 'border_br' : 'no_border';
 
                 context.add_class(className);
 
