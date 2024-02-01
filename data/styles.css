@@ -1,0 +1,45 @@
+.dark_tile {
+    background-color: black;
+    transition: background-color 0.5s ease;
+  }
+  
+  .light_tile {
+    background-color: whitesmoke;
+    transition: box-shadow 0.5s ease;
+  }
+  
+  .dark_tile:hover, .light_tile:hover {
+    box-shadow: inset 1000px 200px 5px 0px rgba(50,255,0,0.1);
+  }
+  
+  .no_border {
+    border-radius: 0;
+  }
+  
+  .border_tl {
+    border-top-left-radius: 10%;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+  
+  .border_tr {
+    border-top-right-radius: 10%;
+    border-top-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+  
+  .border_bl {
+    border-bottom-left-radius: 10%;
+    border-bottom-right-radius: 0;
+    border-top-right-radius: 0;
+    border-top-left-radius: 0;
+  }
+  
+  .border_br {
+    border-bottom-right-radius: 10%;
+    border-bottom-left-radius: 0;
+    border-top-right-radius: 0;
+    border-top-left-radius: 0;
+  }
