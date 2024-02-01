@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="gtk-chess">
+	<schema id="io.github.GtkChess" path="/io/github/GtkChess/">
+	</schema>
+</schemalist>
