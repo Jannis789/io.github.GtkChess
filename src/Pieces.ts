@@ -3,6 +3,7 @@ import Gio from 'gi://Gio';
 import GdkPixbuf from 'gi://GdkPixbuf';
 import { Window } from "./window.js";
 
+
 export class Pieces {
     private chessBoard: Array<Array<string | null>> = [
         ["r", "n", "b", "q", "k", "b", "n", "r"],
@@ -15,7 +16,7 @@ export class Pieces {
         ["R", "N", "B", "Q", "K", "B", "N", "R"]
     ]
 
-    private translateLetterToString: Record<string, string> = {
+    private letterTranslate: Record<string, string> = {
         'k': 'black_king',
         'q': 'black_queen',
         'r': 'black_rook',
@@ -36,19 +37,19 @@ export class Pieces {
         return Window._gridFrame.get_child_at(x, y) as Gtk.Button;    
     }
 
-_initPieces() {
-    for (let row = 0; row < 8; row++) {
-        for (let col = 0; col < 8; col++) {
-            const pieceString: string | null = this.chessBoard[row][col]; 
-            const translatedLetter: string | null = pieceString ? this.translateLetterToString[pieceString] : null;
-            if (translatedLetter) {
-                this.addPieceAt(translatedLetter, col, row);
+    _initPieces() {
+        for (let row = 0; row < 8; row++) {
+            for (let col = 0; col < 8; col++) {
+                const pieceString: string | null = this.chessBoard[row][col]; 
+                const translatedLetter: string | null = pieceString ? this.letterTranslate[pieceString] : null;
+                if (translatedLetter) {
+                    this.setPieceAt(translatedLetter, col, row);
+                }
             }
         }
     }
-}
-    
-    addPieceAt(pieceType: string,x: number, y: number) {
+
+    setPieceAt(pieceType: string,x: number, y: number): void {
         const button: Gtk.Button = this.getTile(x,y);
 
         const resourcePath: string = '/io/github/GtkChess/img/' + pieceType + '.svg';
@@ -61,4 +62,8 @@ _initPieces() {
         image.set_from_pixbuf(pixbuf);
         button.set_child(image);
     }
+}
+
+export function currentPressedButtonLocation(vars: Record<string, number>): void {
+  (console as any).log(vars.x, vars.y);
 }

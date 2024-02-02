@@ -6,6 +6,8 @@ export class ChessGame {
     constructor() {
         new GameBoard();
         new Pieces();
+        // new GameLogic();
+        // oder new GameLoop();
     }
 }
 

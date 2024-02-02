@@ -1,5 +1,6 @@
 import Gtk from 'gi://Gtk?version=4.0';
 import { Window } from "./window.js";
+import { currentPressedButtonLocation } from "./Pieces.js";
 export class GameBoard {
     private _gridFrame: Gtk.Grid;
     private _cssProvider: Gtk.CssProvider;
@@ -14,6 +15,9 @@ export class GameBoard {
             for (let col = 0; col < 8; col++) {
 
                 const button: Gtk.Button = new Gtk.Button;
+                button.connect('clicked', () => {
+                    currentPressedButtonLocation({ x: col, y: row });
+                });
                 button.set_hexpand(true);
                 button.set_vexpand(true);
 
@@ -38,3 +42,4 @@ export class GameBoard {
         }
     }
 }
+
