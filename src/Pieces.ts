@@ -40,10 +40,7 @@ export class InitializePieces {
                 if (!pieceString) {
                     continue;
                 }
-                const translatedLetter: string | null = this.letterTranslate[pieceString];
-                if (!translatedLetter) {
-                    continue;
-                }
+                const translatedLetter: string = this.letterTranslate[pieceString];
                 this.setPieceAt(translatedLetter, col, row);
                 const isWhite: boolean = pieceString.toLowerCase() !== pieceString;
                 const referenceToValue: Piece[] = isWhite ? _piecesList.white : _piecesList.black;
@@ -68,9 +65,12 @@ export class InitializePieces {
                         referenceToValue.push(new King(pieceColor, col, row));
                         break;
                 }
+                const piece: false | Piece = getPieceAt(col, row);
+                if (piece && !isWhite) {
+                    piece.setAttackable();
+                }
             }
         }
-        (console as any).log(_piecesList);
     }
     private getTile(x: number, y: number): Gtk.Button {
         // Assuming this is your original function
@@ -94,66 +94,115 @@ export class InitializePieces {
         this.initPieces();
     }
 }
-
+function getPieceAt(x: number, y: number): Piece | false {
+    let foundPiece: Piece | false = false;
+    Object.values(_piecesList).forEach((pieceList: Piece[]) => {
+        pieceList.forEach((piece: Piece) => {
+            if (piece.x === x && piece.y === y) {
+                foundPiece = piece;
+            }
+        })
+    })
+    return foundPiece;
+}
 class Piece {
-    private color: string;
-    private x: number;
-    private y: number;
-    constructor(color: string, x: number, y: number) {        
+    public color: string;
+    public x: number;
+    public y: number
+    public isAttackable: boolean;
+    constructor(color: string, x: number, y: number) {
         this.color = color;
         this.x = x;
         this.y = y;
+        this.isAttackable = false;
+    }
+    isOutsideBoard(x: number, y: number): boolean {
+        if (x < 0 || x > 7 || y < 0 || y > 7) {
+            return true;
+        }
+        return false;
+    }
+    
+    setAttackable(): void {
+        this.isAttackable = true;
+    }
+    toggleAttackability(): void {
+        this.isAttackable = !this.isAttackable;
+    }
+
+    isTileAttackable(x: number, y: number): boolean {
+        const piece: false | Piece = getPieceAt(x, y);
+        // if it's a attackable Piece or no Piece, it's attackable
+        return (piece instanceof Piece && piece.isAttackable) || (piece === false);
     }
 }
 
 class Pawn extends Piece {
-    private pieceType: string;
+    public isMoved: boolean = false;
     constructor(color: string, x: number, y: number) {
         super(color, x, y);
-        this.pieceType = "Pawn";
+        this.color = color;
+    }
+
+    get possibleMoves(): Array<number[]> {
+        const possibleMoves: Array<number[]> = [];
+        const direction: number = this.color === "white" ? -1 : 1;
+        if (!this.isMoved) {
+            const newY: number = this.y + (direction * 2);
+            const newX: number = this.x;
+            if (!this.isOutsideBoard(newX, newY) && !getPieceAt(newX, newY)) {
+                possibleMoves.push([newX, newY]);
+            }
+        }
+
+        if (!this.isOutsideBoard(this.x, this.y + direction)  && !getPieceAt(this.x, this.y + direction)) {
+            possibleMoves.push([this.x, this.y + direction]);
+        }
+        const rightAttackPiece = getPieceAt(this.x + 1, this.y + direction);
+        if (rightAttackPiece && rightAttackPiece.isAttackable) {
+            possibleMoves.push([this.x + 1, this.y + direction]);
+        }
+        const leftAttackPiece = getPieceAt(this.x - 1, this.y + direction);
+        if (leftAttackPiece && leftAttackPiece.isAttackable) {
+            possibleMoves.push([this.x - 1, this.y + direction]);
+        }
+        return possibleMoves;
     }
 }
 
 class Rook extends Piece {
-    private pieceType: string;
     constructor(color: string, x: number, y: number) {
         super(color, x, y);
-        this.pieceType = "Rook";
     }
 }
 
 class Knight extends Piece {
-    private pieceType: string;
     constructor(color: string, x: number, y: number) {
         super(color, x, y);
-        this.pieceType = "Knight";
     }
 }
 
 class Bishop extends Piece {
-    private pieceType: string;
     constructor(color: string, x: number, y: number) {
         super(color, x, y);
-        this.pieceType = "Bishop";
     }
 }
 
 class Queen extends Piece {
-    private pieceType: string;
     constructor(color: string, x: number, y: number) {
         super(color, x, y);
-        this.pieceType = "Queen";
     }
 }
 
 class King extends Piece {
-    private pieceType: string;
     constructor(color: string, x: number, y: number) {
         super(color, x, y);
-        this.pieceType = "King";
     }
 }
 
 export function currentPressedButtonLocation(coordinate: Record<string, number>): void {
-    (console as any).log(coordinate.x, coordinate.y);
+    const piece = getPieceAt(coordinate.x, coordinate.y);
+    if (piece instanceof Pawn) {
+        (console as any).log(piece.possibleMoves);
+    }
 }
