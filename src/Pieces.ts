@@ -12,7 +12,7 @@ export class InitializePieces {
         ["p", "p", "p", "p", "p", "p", "p", "p"],
         [null, null, null, null, null, null, null, null],
         [null, null, null, null, null, null, null, null],
-        [null, null, null, null, null, "R", null, null],
+        [null, null, null, null, null, null, null, null],
         [null, null, null, null, null, null, null, null],
         ["P", "P", "P", "P", "P", "P", "P", "P"],
         ["R", "N", "B", "Q", "K", "B", "N", "R"]
@@ -135,6 +135,32 @@ class Piece {
         // and ensure that the target square is not outside the board
         return ((piece instanceof Piece && piece.isAttackable) || (piece === false)) && !this.isOutsideBoard(x, y);
     }
+
+    regularMovement (directionVector: Array<number[]>): Array<number[]> {
+        const possibleMoves: Array<number[]> = [];
+        for (const [offsetX, offsetY] of directionVector) {
+            let newX: number = this.x + offsetX;
+            let newY: number = this.y + offsetY;
+            while (this.isTileAttackable(newX, newY)) {
+                possibleMoves.push([newX, newY]);
+
+                // if piece is found, break the while loop, because a regularPiece cant jump over pieces
+                if (getPieceAt(newX, newY)) {
+                    break;
+                }
+
+                newX += offsetX;
+                newY += offsetY;
+            }
+        }
+        return possibleMoves;
+    }
+
+    get possibleMoves(): Array<number[]> {
+        throw new Error("Piece is not a playable piece");
+        return [];
+    }
+
 }
 
 class Pawn extends Piece {
@@ -175,6 +201,7 @@ class Pawn extends Piece {
 
         return possibleMoves;
     }
+
 }
 
 class Rook extends Piece {
@@ -185,23 +212,7 @@ class Rook extends Piece {
     }
 
     get possibleMoves(): Array<number[]> {
-        const possibleMoves: Array<number[]> = [];
-        for (const [offsetX, offsetY] of this.rookMoves) {
-            let newX: number = this.x + offsetX;
-            let newY: number = this.y + offsetY;
-            while (this.isTileAttackable(newX, newY)) {
-                possibleMoves.push([newX, newY]);
-
-                // if piece is found, break the while loop, because a Rook cant jump over pieces
-                if (getPieceAt(newX, newY)) {
-                    break;
-                }
-                
-                newX += offsetX;
-                newY += offsetY;
-            }
-        }
-        return possibleMoves;
+        return this.regularMovement(this.rookMoves);
     }
 }
 
@@ -214,7 +225,6 @@ class Knight extends Piece {
 
     get possibleMoves(): Array<number[]> {
         const possibleMoves: Array<number[]> = [];
-        (console)
         this.knightMoves.forEach(([offsetX, offsetY]: number[]) => {
             const newX: number = this.x + offsetX;
             const newY: number = this.y + offsetY;
@@ -227,14 +237,26 @@ class Knight extends Piece {
 }
 
 class Bishop extends Piece {
+    private bishopMoves: Array<number[]>;
+
     constructor(color: string, x: number, y: number) {
         super(color, x, y);
+        this.bishopMoves = [[1,1], [1,-1], [-1,1], [-1,-1]];
+    }
+    get possibleMoves(): Array<number[]> {
+        return this.regularMovement(this.bishopMoves);
     }
 }
 
 class Queen extends Piece {
+    private queenMoves: Array<number[]>;
     constructor(color: string, x: number, y: number) {
         super(color, x, y);
+        this.queenMoves = [[1,0], [0,1], [-1,0], [0,-1], [1,1], [1,-1], [-1,1], [-1,-1]];
+    }
+
+    get possibleMoves(): Array<number[]> {
+        return this.regularMovement(this.queenMoves);
     }
 }
 
@@ -256,12 +278,12 @@ class King extends Piece {
         });
         return possibleMoves;
     }
-
 }
+
 
 export function currentPressedButtonLocation(coordinate: Record<string, number>): void {
     const piece = getPieceAt(coordinate.x, coordinate.y);
-    if (piece instanceof Rook) {
+    if (piece instanceof Piece) {
         (console as any).log(piece.possibleMoves);
     }
 }
