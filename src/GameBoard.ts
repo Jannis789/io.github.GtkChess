@@ -22,33 +22,20 @@ export class GameBoard {
                 button.set_vexpand(true);
 
                 const context: Gtk.StyleContext = button.get_style_context();
+                
+                const tileClass: string = (col % 2 === row % 2) ? 'dark_tile' : 'light_tile';
 
-                context.add_class((col % 2 === row % 2) ? 'dark_tile' : 'light_tile');
+                const borderClass: string = 
+                    (col === 0 && row === 0) ? 'border_tl' :
+                    (col === 7 && row === 0) ? 'border_tr' :
+                    (col === 0 && row === 7) ? 'border_bl' :
+                    (col === 7 && row === 7) ? 'border_br' :
+                    'no_border';
 
-                let className: string;
-
-                switch (true) {
-                    default: 
-                        className = 'no_border';
-                        break;
-                    case (col === 0 && row === 0):
-                        className = 'border_tl';
-                        break;
-                    case (col === 7 && row === 0):
-                        className = 'border_tr';
-                        break;
-                    case (col === 0 && row === 7):
-                        className = 'border_bl';
-                        break;
-                    case (col === 7 && row === 7):
-                        className = 'border_br';
-                        break;
-                }
-
-                context.add_class(className);
+                context.add_class(tileClass);
+                context.add_class(borderClass);
 
                 context.add_provider(this._cssProvider, Gtk.STYLE_PROVIDER_PRIORITY_USER);
-
 
                 this._gridFrame.attach(button, col, row, 1, 1);
 

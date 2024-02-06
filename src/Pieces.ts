@@ -65,7 +65,7 @@ export class InitializePieces {
                         referenceToValue.push(new King(pieceColor, col, row));
                         break;
                 }
-                const piece: false | Piece = getPieceAt(col, row);
+                const piece: Piece | false = getPieceAt(col, row);
                 if (piece && !isWhite) {
                     piece.setAttackable();
                 }
@@ -94,17 +94,18 @@ export class InitializePieces {
         this.initPieces();
     }
 }
+
 function getPieceAt(x: number, y: number): Piece | false {
-    let foundPiece: Piece | false = false;
-    Object.values(_piecesList).forEach((pieceList: Piece[]) => {
-        pieceList.forEach((piece: Piece) => {
+    for (const pieceList of Object.values(_piecesList)) {
+        for (const piece of pieceList) {
             if (piece.x === x && piece.y === y) {
-                foundPiece = piece;
+                return piece;
             }
-        })
-    })
-    return foundPiece;
+        }
+    }
+    return false;
 }
+
 class Piece {
     public color: string;
     public x: number;
@@ -117,12 +118,9 @@ class Piece {
         this.isAttackable = false;
     }
     isOutsideBoard(x: number, y: number): boolean {
-        if (x < 0 || x > 7 || y < 0 || y > 7) {
-            return true;
-        }
-        return false;
+        return (x < 0 || x > 7 || y < 0 || y > 7);
     }
-    
+
     setAttackable(): void {
         this.isAttackable = true;
     }
@@ -131,9 +129,10 @@ class Piece {
     }
 
     isTileAttackable(x: number, y: number): boolean {
-        const piece: false | Piece = getPieceAt(x, y);
-        // if it's a attackable Piece or no Piece, it's attackable
-        return (piece instanceof Piece && piece.isAttackable) || (piece === false);
+        const piece: Piece | false = getPieceAt(x, y);
+        // Check if the target square is either occupied by an attackable piece or empty
+        // and ensure that the target square is not outside the board
+        return ((piece instanceof Piece && piece.isAttackable) || (piece === false)) && !this.isOutsideBoard(x, y);
     }
 }
 
@@ -147,25 +146,32 @@ class Pawn extends Piece {
     get possibleMoves(): Array<number[]> {
         const possibleMoves: Array<number[]> = [];
         const direction: number = this.color === "white" ? -1 : 1;
+
         if (!this.isMoved) {
-            const newY: number = this.y + (direction * 2);
+            const doubleMoveY: number = this.y + (direction * 2);
             const newX: number = this.x;
-            if (!this.isOutsideBoard(newX, newY) && !getPieceAt(newX, newY)) {
-                possibleMoves.push([newX, newY]);
+            if (!this.isOutsideBoard(newX, doubleMoveY) && !getPieceAt(newX, doubleMoveY)) {
+                possibleMoves.push([newX, doubleMoveY]);
             }
         }
 
-        if (!this.isOutsideBoard(this.x, this.y + direction)  && !getPieceAt(this.x, this.y + direction)) {
-            possibleMoves.push([this.x, this.y + direction]);
+        const newY: number = this.y + direction;
+
+        if (!this.isOutsideBoard(this.x, newY) && !getPieceAt(this.x, newY)) {
+            possibleMoves.push([this.x, newY]);
         }
-        const rightAttackPiece = getPieceAt(this.x + 1, this.y + direction);
+
+        const rightAttackPiece = getPieceAt(this.x + 1, newY);
+        const leftAttackPiece = getPieceAt(this.x - 1, newY);
+
         if (rightAttackPiece && rightAttackPiece.isAttackable) {
-            possibleMoves.push([this.x + 1, this.y + direction]);
+            possibleMoves.push([this.x + 1, newY]);
         }
-        const leftAttackPiece = getPieceAt(this.x - 1, this.y + direction);
+
         if (leftAttackPiece && leftAttackPiece.isAttackable) {
-            possibleMoves.push([this.x - 1, this.y + direction]);
+            possibleMoves.push([this.x - 1, newY]);
         }
+
         return possibleMoves;
     }
 }
@@ -177,8 +183,23 @@ class Rook extends Piece {
 }
 
 class Knight extends Piece {
+    private knightMoves: Array<number[]>;
     constructor(color: string, x: number, y: number) {
         super(color, x, y);
+        this.knightMoves = [[-2, -1], [-2, 1], [-1, -2], [-1, 2], [1, -2], [1, 2], [2, -1], [2, 1]];
+    }
+
+    get possibleMoves(): Array<number[]> {
+        const possibleMoves: Array<number[]> = [];
+
+        this.knightMoves.forEach(([offsetX, offsetY]: number[]) => {
+            const newX: number = this.x + offsetX;
+            const newY: number = this.y + offsetY;
+            if (this.isTileAttackable(newX, newY)) {
+                possibleMoves.push([newX,newY]);
+            }
+        });
+        return possibleMoves;
     }
 }
 
@@ -195,14 +216,29 @@ class Queen extends Piece {
 }
 
 class King extends Piece {
+    private kingMoves: Array<number[]>;
     constructor(color: string, x: number, y: number) {
         super(color, x, y);
+        this.kingMoves = [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]];
     }
+
+    get possibleMoves(): Array<number[]> {
+        const possibleMoves: Array<number[]> = [];
+        this.kingMoves.forEach(([offsetX, offsetY]: number[]) => {
+            const newX: number = this.x + offsetX;
+            const newY: number = this.y + offsetY;
+            if (this.isTileAttackable(newX, newY)) {
+                possibleMoves.push([newX, newY]);
+            }
+        });
+        return possibleMoves;
+    }
+
 }
 
 export function currentPressedButtonLocation(coordinate: Record<string, number>): void {
     const piece = getPieceAt(coordinate.x, coordinate.y);
-    if (piece instanceof Pawn) {
+    if (piece instanceof King) {
         (console as any).log(piece.possibleMoves);
     }
 }
