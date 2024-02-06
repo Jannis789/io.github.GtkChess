@@ -12,7 +12,7 @@ export class InitializePieces {
         ["p", "p", "p", "p", "p", "p", "p", "p"],
         [null, null, null, null, null, null, null, null],
         [null, null, null, null, null, null, null, null],
-        [null, null, null, null, null, null, null, null],
+        [null, null, null, null, null, "R", null, null],
         [null, null, null, null, null, null, null, null],
         ["P", "P", "P", "P", "P", "P", "P", "P"],
         ["R", "N", "B", "Q", "K", "B", "N", "R"]
@@ -96,6 +96,7 @@ export class InitializePieces {
 }
 
 function getPieceAt(x: number, y: number): Piece | false {
+    let bool: boolean = false;
     for (const pieceList of Object.values(_piecesList)) {
         for (const piece of pieceList) {
             if (piece.x === x && piece.y === y) {
@@ -177,8 +178,30 @@ class Pawn extends Piece {
 }
 
 class Rook extends Piece {
+    private rookMoves: Array<number[]>;
     constructor(color: string, x: number, y: number) {
         super(color, x, y);
+        this.rookMoves = [[1,0], [0,1], [-1,0], [0,-1]];
+    }
+
+    get possibleMoves(): Array<number[]> {
+        const possibleMoves: Array<number[]> = [];
+        for (const [offsetX, offsetY] of this.rookMoves) {
+            let newX: number = this.x + offsetX;
+            let newY: number = this.y + offsetY;
+            while (this.isTileAttackable(newX, newY)) {
+                possibleMoves.push([newX, newY]);
+
+                // if piece is found, break the while loop, because a Rook cant jump over pieces
+                if (getPieceAt(newX, newY)) {
+                    break;
+                }
+                
+                newX += offsetX;
+                newY += offsetY;
+            }
+        }
+        return possibleMoves;
     }
 }
 
@@ -191,7 +214,7 @@ class Knight extends Piece {
 
     get possibleMoves(): Array<number[]> {
         const possibleMoves: Array<number[]> = [];
-
+        (console)
         this.knightMoves.forEach(([offsetX, offsetY]: number[]) => {
             const newX: number = this.x + offsetX;
             const newY: number = this.y + offsetY;
@@ -238,7 +261,7 @@ class King extends Piece {
 
 export function currentPressedButtonLocation(coordinate: Record<string, number>): void {
     const piece = getPieceAt(coordinate.x, coordinate.y);
-    if (piece instanceof King) {
+    if (piece instanceof Rook) {
         (console as any).log(piece.possibleMoves);
     }
 }
