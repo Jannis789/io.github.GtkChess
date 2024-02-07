@@ -6,5 +6,6 @@
     <file>Pieces.js</file>
     <file>GameBoard.js</file>
     <file>ChessGame.js</file>
+    <file>GameLoop.js</file>
   </gresource>
 </gresources>

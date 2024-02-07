@@ -1,13 +1,14 @@
 import Gtk from 'gi://Gtk?version=4.0';
 import { Window } from "./window.js";
-import { currentPressedButtonLocation } from "./Pieces.js";
+import { currentPressedButtonLocation } from "./GameLoop.js";
+
 export class GameBoard {
     private _gridFrame: Gtk.Grid;
-    private _cssProvider: Gtk.CssProvider;
+    static _cssProvider: Gtk.CssProvider;
     constructor() {
         this._gridFrame = Window._gridFrame;
-        this._cssProvider = new Gtk.CssProvider();
-        this._cssProvider.load_from_resource('/io/github/GtkChess/styles.css');
+        GameBoard._cssProvider = new Gtk.CssProvider();
+        GameBoard._cssProvider.load_from_resource('/io/github/GtkChess/styles.css');
         this._initBoard();
     }
     _initBoard() {
@@ -35,12 +36,16 @@ export class GameBoard {
                 context.add_class(tileClass);
                 context.add_class(borderClass);
 
-                context.add_provider(this._cssProvider, Gtk.STYLE_PROVIDER_PRIORITY_USER);
+                context.add_provider(GameBoard._cssProvider, Gtk.STYLE_PROVIDER_PRIORITY_USER);
 
                 this._gridFrame.attach(button, col, row, 1, 1);
 
             }
         }
+    }
+    static getTile(x: number, y: number): Gtk.Button {
+        // Assuming this is your original function
+        return Window._gridFrame.get_child_at(x, y) as Gtk.Button;
     }
 }
 

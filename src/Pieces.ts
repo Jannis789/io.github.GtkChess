@@ -1,7 +1,8 @@
 import Gtk from 'gi://Gtk?version=4.0';
 import Gio from 'gi://Gio';
 import GdkPixbuf from 'gi://GdkPixbuf';
-import { Window } from "./window.js";
+import { GameBoard } from "./GameBoard.js";
+
 const _piecesList: Record<string, Piece[]> = {
     white: [],
     black: []
@@ -72,13 +73,10 @@ export class InitializePieces {
             }
         }
     }
-    private getTile(x: number, y: number): Gtk.Button {
-        // Assuming this is your original function
-        return Window._gridFrame.get_child_at(x, y) as Gtk.Button;
-    }
+
 
     private setPieceAt(pieceType: string, x: number, y: number): void {
-        const button: Gtk.Button = this.getTile(x, y);
+        const button: Gtk.Button = GameBoard.getTile(x, y);
 
         const resourcePath: string = '/io/github/GtkChess/img/' + pieceType + '.svg';
         const file: Gio.File = Gio.File.new_for_uri('resource://' + resourcePath);
@@ -95,7 +93,7 @@ export class InitializePieces {
     }
 }
 
-function getPieceAt(x: number, y: number): Piece | false {
+export function getPieceAt(x: number, y: number): Piece | false {
     let bool: boolean = false;
     for (const pieceList of Object.values(_piecesList)) {
         for (const piece of pieceList) {
@@ -107,7 +105,7 @@ function getPieceAt(x: number, y: number): Piece | false {
     return false;
 }
 
-class Piece {
+export class Piece {
     public color: string;
     public x: number;
     public y: number
@@ -277,13 +275,5 @@ class King extends Piece {
             }
         });
         return possibleMoves;
-    }
-}
-
-
-export function currentPressedButtonLocation(coordinate: Record<string, number>): void {
-    const piece = getPieceAt(coordinate.x, coordinate.y);
-    if (piece instanceof Piece) {
-        (console as any).log(piece.possibleMoves);
     }
 }

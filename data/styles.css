@@ -43,3 +43,8 @@
     border-top-right-radius: 0;
     border-top-left-radius: 0;
   }
+
+.possible_move {
+  box-shadow: inset 1000px 200px 5px 0px rgba(0, 255, 8, 0.2);
+  transition: background-color 0.5s ease;
+}

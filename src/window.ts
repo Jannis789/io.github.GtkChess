@@ -1,7 +1,5 @@
 // Window.ts
-import { AboutWindow } from 'gi-types/adw1.js';
-import { Application } from 'gi-types/gio2.js';
-import { ApplicationWindow } from 'gi-types/gtk4.js';
+
 import Adw from 'gi://Adw';
 import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk?version=4.0';
