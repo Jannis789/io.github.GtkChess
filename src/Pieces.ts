@@ -3,10 +3,25 @@ import Gio from 'gi://Gio';
 import GdkPixbuf from 'gi://GdkPixbuf';
 import { GameBoard } from "./GameBoard.js";
 
-const _piecesList: Record<string, Piece[]> = {
+export const _piecesList: Record<string, Piece[]> = {
     white: [],
     black: []
 };
+
+export function setPieceAt(pieceType: string, x: number, y: number): void {
+    const button: Gtk.Button = GameBoard.getTile(x, y);
+
+    const resourcePath: string = '/io/github/GtkChess/img/' + pieceType + '.svg';
+    const file: Gio.File = Gio.File.new_for_uri('resource://' + resourcePath);
+    const inputStream: Gio.InputStream = file.read(null);
+    const image: Gtk.Image = new Gtk.Image();
+
+    const pixbuf: GdkPixbuf.Pixbuf = GdkPixbuf.Pixbuf.new_from_stream_at_scale(inputStream, 400, 400, true, null);
+
+    image.set_from_pixbuf(pixbuf);
+    button.set_child(image);
+}
+
 export class InitializePieces {
     private chessBoard: Array<Array<string | null>> = [
         ["r", "n", "b", "q", "k", "b", "n", "r"],
@@ -42,7 +57,7 @@ export class InitializePieces {
                     continue;
                 }
                 const translatedLetter: string = this.letterTranslate[pieceString];
-                this.setPieceAt(translatedLetter, col, row);
+                setPieceAt(translatedLetter, col, row);
                 const isWhite: boolean = pieceString.toLowerCase() !== pieceString;
                 const referenceToValue: Piece[] = isWhite ? _piecesList.white : _piecesList.black;
                 const pieceColor: string = isWhite ? "white" : "black";
@@ -74,20 +89,6 @@ export class InitializePieces {
         }
     }
 
-
-    private setPieceAt(pieceType: string, x: number, y: number): void {
-        const button: Gtk.Button = GameBoard.getTile(x, y);
-
-        const resourcePath: string = '/io/github/GtkChess/img/' + pieceType + '.svg';
-        const file: Gio.File = Gio.File.new_for_uri('resource://' + resourcePath);
-        const inputStream: Gio.InputStream = file.read(null);
-        const image: Gtk.Image = new Gtk.Image();
-
-        const pixbuf: GdkPixbuf.Pixbuf = GdkPixbuf.Pixbuf.new_from_stream_at_scale(inputStream, 400, 400, true, null);
-
-        image.set_from_pixbuf(pixbuf);
-        button.set_child(image);
-    }
     constructor() {
         this.initPieces();
     }
@@ -116,6 +117,7 @@ export class Piece {
         this.y = y;
         this.isAttackable = false;
     }
+
     isOutsideBoard(x: number, y: number): boolean {
         return (x < 0 || x > 7 || y < 0 || y > 7);
     }
@@ -161,44 +163,39 @@ export class Piece {
 
 }
 
-class Pawn extends Piece {
+export class Pawn extends Piece {
     public isMoved: boolean = false;
     constructor(color: string, x: number, y: number) {
         super(color, x, y);
         this.color = color;
     }
 
-    get possibleMoves(): Array<number[]> {
-        const possibleMoves: Array<number[]> = [];
-        const direction: number = this.color === "white" ? -1 : 1;
+get possibleMoves(): Array<number[]> {
+    const possibleMoves: Array<number[]> = [];
+    const direction: number = this.color === "white" ? -1 : 1;
 
-        if (!this.isMoved) {
-            const doubleMoveY: number = this.y + (direction * 2);
-            const newX: number = this.x;
-            if (!this.isOutsideBoard(newX, doubleMoveY) && !getPieceAt(newX, doubleMoveY)) {
-                possibleMoves.push([newX, doubleMoveY]);
-            }
+    if (!this.isMoved) {
+        const doubleMoveY: number = this.y + (direction * 2);
+        const newX: number = this.x;
+        if (!this.isOutsideBoard(newX, doubleMoveY) && !getPieceAt(newX, doubleMoveY)) {
+            possibleMoves.push([newX, doubleMoveY]);
         }
-
-        const newY: number = this.y + direction;
-
-        if (!this.isOutsideBoard(this.x, newY) && !getPieceAt(this.x, newY)) {
-            possibleMoves.push([this.x, newY]);
-        }
-
-        const rightAttackPiece = getPieceAt(this.x + 1, newY);
-        const leftAttackPiece = getPieceAt(this.x - 1, newY);
-
-        if (rightAttackPiece && rightAttackPiece.isAttackable) {
-            possibleMoves.push([this.x + 1, newY]);
-        }
-
-        if (leftAttackPiece && leftAttackPiece.isAttackable) {
-            possibleMoves.push([this.x - 1, newY]);
-        }
-
-        return possibleMoves;
     }
+    const newY: number = this.y + direction;
+
+    if (!this.isOutsideBoard(this.x, newY) && !getPieceAt(this.x, newY)) {
+        possibleMoves.push([this.x, newY]);
+    }
+
+    const rightAttackPiece = getPieceAt(this.x + 1, newY);
+    const leftAttackPiece = getPieceAt(this.x - 1, newY);
+
+    if ((rightAttackPiece && rightAttackPiece.isAttackable) || (leftAttackPiece && leftAttackPiece.isAttackable)) {
+        possibleMoves.push([this.x + 1, newY], [this.x - 1, newY]);
+    }
+
+    return possibleMoves;
+}
 
 }
 

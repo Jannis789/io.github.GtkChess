@@ -43,6 +43,11 @@ export class GameBoard {
             }
         }
     }
+
+    static removeTile(x: number, y: number): void {
+        GameBoard.getTile(x, y).set_child(null);
+    }
+
     static getTile(x: number, y: number): Gtk.Button {
         // Assuming this is your original function
         return Window._gridFrame.get_child_at(x, y) as Gtk.Button;

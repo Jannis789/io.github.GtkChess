@@ -9,8 +9,6 @@ export class ChessGame {
         new GameBoard();
         new InitializePieces();
         GameLoopInstance = new GameLoop();
-        // new GameLogic();
-        // oder new GameLoop();
     }
 }
 
