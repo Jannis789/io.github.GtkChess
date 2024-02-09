@@ -1,4 +1,4 @@
-import { _piecesList, Piece, Pawn, getPieceAt, setPieceAt } from "./Pieces.js";
+import { _piecesList, _king, Piece, Pawn, getPieceAt, setPieceAt } from "./Pieces.js";
 import { GameBoard } from "./GameBoard.js";
 import { GameLoopInstance } from "./ChessGame.js";
 import Gtk from 'gi://Gtk?version=4.0';
@@ -19,6 +19,8 @@ export class GameLoop {
     private _cssProvider: Gtk.CssProvider = GameBoard._cssProvider;
     private currentPiece: Piece | false = false;
     private currentPossibleMoves: Array<number[]> = [];
+    private isInCheck = false;
+
     constructor() {
         this._cssProvider;
     }
@@ -32,7 +34,7 @@ export class GameLoop {
             });
         }
 
-        this.currentPiece = piece; // set piece to the current piece
+        this.currentPiece = piece;                                                          // set piece as the current piece
 
         // highlight possible moves
         const possibleMoves: Array<number[]> = this.currentPiece.possibleMoves; 
@@ -42,19 +44,20 @@ export class GameLoop {
 
         // put possibleMoves in currentPossibleMoves
         this.currentPossibleMoves = possibleMoves;
-        // end this turn
-        this.changeTurn();
     }
 
     tileHandler(x: number, y: number): void {
         if (this.currentPossibleMoves.length > 0) {
-            this.currentPossibleMoves.forEach(([possibleX, possibleY]: number[]) => {
+            for (const [possibleX, possibleY] of this.currentPossibleMoves) {
                 if (this.currentPiece && x === possibleX && y === possibleY) {
                     this.movePieceTo(this.currentPiece, x, y);
-                }
-            })
+                    this.changeTurn();
+                    return;
+                } 
+            }
         }
     }
+
 
     movePieceTo(piece: Piece, x: number, y: number): void {
         GameBoard.removeTile(piece.x, piece.y);                                             // remove old Piece
@@ -77,6 +80,10 @@ export class GameLoop {
 
         // clear currentPossibleMoves
         this.currentPossibleMoves = [];
+        if (this.checkForCheck) {
+            this.isInCheck = true;
+            (console as any).log("CHECK");
+        }
     }
 
     changeTurn(): void {
@@ -88,6 +95,18 @@ export class GameLoop {
         }
     }
 
+    get checkForCheck(): boolean {
+        const currentEnemyColor = isWhitesMove ? "black" : "white";
+        const currentPlayerColor = isWhitesMove ? "white" : "black";
+        for (const piece of _piecesList[currentPlayerColor]) {
+            for (const [possibleX, possibleY] of piece.possibleMoves) {
+                if ((possibleX === _king[currentEnemyColor].x && possibleY === _king[currentEnemyColor].y)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
     highlightMove(x: number, y: number): void {
         const button: Gtk.Button = GameBoard.getTile(x, y);
         const context: Gtk.StyleContext = button.get_style_context();

@@ -8,6 +8,11 @@ export const _piecesList: Record<string, Piece[]> = {
     black: []
 };
 
+export const _king: Record<string, King> = {
+    white: {} as King,
+    black: {} as King
+};
+
 export function setPieceAt(pieceType: string, x: number, y: number): void {
     const button: Gtk.Button = GameBoard.getTile(x, y);
 
@@ -173,15 +178,14 @@ export class Pawn extends Piece {
 get possibleMoves(): Array<number[]> {
     const possibleMoves: Array<number[]> = [];
     const direction: number = this.color === "white" ? -1 : 1;
-
-    if (!this.isMoved) {
+    const newY: number = this.y + direction;
+    if (!this.isMoved && !getPieceAt(this.x, newY)) {
         const doubleMoveY: number = this.y + (direction * 2);
         const newX: number = this.x;
         if (!this.isOutsideBoard(newX, doubleMoveY) && !getPieceAt(newX, doubleMoveY)) {
             possibleMoves.push([newX, doubleMoveY]);
         }
     }
-    const newY: number = this.y + direction;
 
     if (!this.isOutsideBoard(this.x, newY) && !getPieceAt(this.x, newY)) {
         possibleMoves.push([this.x, newY]);
@@ -193,7 +197,6 @@ get possibleMoves(): Array<number[]> {
     if ((rightAttackPiece && rightAttackPiece.isAttackable) || (leftAttackPiece && leftAttackPiece.isAttackable)) {
         possibleMoves.push([this.x + 1, newY], [this.x - 1, newY]);
     }
-
     return possibleMoves;
 }
 
@@ -260,6 +263,7 @@ class King extends Piece {
     constructor(color: string, x: number, y: number) {
         super(color, x, y);
         this.kingMoves = [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]];
+        (color === "white") ? _king.white = this : _king.black = this;
     }
 
     get possibleMoves(): Array<number[]> {
