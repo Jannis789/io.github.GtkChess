@@ -1,50 +1,50 @@
 .dark_tile {
-    background-color: #d18b47;
-    transition: background-color 0.5s ease;
-  }
+  background-color: #1f1f1f;
+  transition: background-color 0.5s ease;
+}
+
+.light_tile {
+  background-color: #d1d1d1;
+  transition: box-shadow 0.5s ease;
+}
+
+.dark_tile:hover, .light_tile:hover {
+  box-shadow: inset 1000px 200px 5px 0px rgba(111, 87, 87, 0.3);
+}
+
+.no_border {
+  border-radius: 0;
+}
+
+.border_tl {
+  border-top-left-radius: 10%;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.border_tr {
+  border-top-right-radius: 10%;
+  border-top-left-radius: 0;
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.border_bl {
+  border-bottom-left-radius: 10%;
+  border-bottom-right-radius: 0;
+  border-top-right-radius: 0;
+  border-top-left-radius: 0;
+}
   
-  .light_tile {
-    background-color: #ffce9e;
-    transition: box-shadow 0.5s ease;
-  }
-  
-  .dark_tile:hover, .light_tile:hover {
-    box-shadow: inset 1000px 200px 5px 0px rgba(50,255,0,0.1);
-  }
-  
-  .no_border {
-    border-radius: 0;
-  }
-  
-  .border_tl {
-    border-top-left-radius: 10%;
-    border-top-right-radius: 0;
-    border-bottom-right-radius: 0;
-    border-bottom-left-radius: 0;
-  }
-  
-  .border_tr {
-    border-top-right-radius: 10%;
-    border-top-left-radius: 0;
-    border-bottom-right-radius: 0;
-    border-bottom-left-radius: 0;
-  }
-  
-  .border_bl {
-    border-bottom-left-radius: 10%;
-    border-bottom-right-radius: 0;
-    border-top-right-radius: 0;
-    border-top-left-radius: 0;
-  }
-  
-  .border_br {
-    border-bottom-right-radius: 10%;
-    border-bottom-left-radius: 0;
-    border-top-right-radius: 0;
-    border-top-left-radius: 0;
-  }
+.border_br {
+      border-bottom-right-radius: 10%;
+      border-bottom-left-radius: 0;
+      border-top-right-radius: 0;
+      border-top-left-radius: 0;
+}
 
 .possible_move {
-  box-shadow: inset 1000px 200px 5px 0px rgba(0, 255, 8, 0.2);
+  box-shadow: inset 1000px 200px 5px 0px rgba(95, 135, 96, 0.3);
   transition: background-color 0.5s ease;
 }

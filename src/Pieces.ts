@@ -29,14 +29,14 @@ export function setPieceAt(pieceType: string, x: number, y: number): void {
 
 export class InitializePieces {
     private chessBoard: Array<Array<string | null>> = [
-        ["r", "n", "b", "q", "k", "b", "n", "r"],
+        ["r", "n", "b", "q", null, "b", "n", "r"],
         ["p", "p", "p", "p", "p", "p", "p", "p"],
         [null, null, null, null, null, null, null, null],
         [null, null, null, null, null, null, null, null],
-        [null, null, null, null, null, null, null, null],
-        [null, null, null, null, null, null, null, null],
-        ["P", "P", "P", "P", "P", "P", "P", "P"],
-        ["R", "N", "B", "Q", "K", "B", "N", "R"]
+        [null, null, null, "q", null, null, null, null],
+        [null, null, null, null, null, "b", null, null],
+        ["P", "P", "P", "Q", "Q", "P", "P", "P"],
+        ["R", "N", "B", "K", "P", "B", "N", "R"]
     ];
 
     private letterTranslate: Record<string, string> = {
