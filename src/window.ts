@@ -11,7 +11,7 @@ export class Window extends Adw.ApplicationWindow {
         GObject.registerClass(
             {
                 Template:
-                    'resource:///io/github/GtkChess/window.ui',
+                'resource:///io/github/GtkChess/window.ui',
                 InternalChildren: ['gridFrame'],
             },
             Window
@@ -20,7 +20,7 @@ export class Window extends Adw.ApplicationWindow {
 
     constructor(params?: Partial<Adw.ApplicationWindow.ConstructorProperties>) {
         super(params);
-        Window._gridFrame = (this as any)._gridFrame; 
+        Window._gridFrame = (this as any)._gridFrame;
         new ChessGame();
     }
 }

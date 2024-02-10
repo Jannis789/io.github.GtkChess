@@ -29,7 +29,7 @@ export class GameLoop {
     pieceHandler(piece: Piece): void {
         // if a selection exists, revert it
         if (this.currentPiece) {
-            const possibleMoves: Array<number[]> = this.getValidMoves(this.currentPiece); 
+            const possibleMoves: Array<number[]> = this.getValidMoves(this.currentPiece);
             possibleMoves.forEach(([x, y]: number[]) => {
                 this.revertHighlightedMove(x, y);
             });
@@ -38,9 +38,9 @@ export class GameLoop {
         this.currentPiece = piece;                                                          // set piece as the current piece
 
         // highlight possible moves
-        const possibleMoves: Array<number[]> = this.getValidMoves(this.currentPiece); 
+        const possibleMoves: Array<number[]> = this.getValidMoves(this.currentPiece);
         possibleMoves.forEach(([x, y]: number[]) => {
-           this.highlightMove(x, y); 
+            this.highlightMove(x, y);
         });
 
         // put possibleMoves in currentPossibleMoves
@@ -54,7 +54,7 @@ export class GameLoop {
                     this.movePieceTo(this.currentPiece, x, y);
                     this.changeTurn();
                     return;
-                } 
+                }
             }
         }
     }
@@ -64,7 +64,8 @@ export class GameLoop {
         GameBoard.removeTile(piece.x, piece.y);                                             // remove old Piece
         let attackedPiece: Piece | false = getPieceAt(x, y);
         if (attackedPiece) {
-            attackedPiece.x = -99;                                                           // Hier muss es eine bessere Lösung geben!
+            // entferne Instanz aus _piecesList
+            _piecesList[attackedPiece.color].splice(_piecesList[attackedPiece.color].indexOf(attackedPiece), 1);                                                           // Hier muss es eine bessere Lösung geben!
         }
 
         // if piece is instance of Pawn, set isMoved to true to change the movement behavior
@@ -77,7 +78,7 @@ export class GameLoop {
         setPieceAt(pieceStr, x, y);                                                         // sets the image to the new coordinates
 
         // revert highlighted moves
-        if (this.currentPossibleMoves.length > 0) { 
+        if (this.currentPossibleMoves.length > 0) {
             this.currentPossibleMoves.forEach(([possibleX, possibleY]: number[]) => {
                 this.revertHighlightedMove(possibleX, possibleY);
             });
@@ -99,81 +100,66 @@ export class GameLoop {
         }
     }
 
-// Diese Methode ermittelt die gültigen Züge für eine Schachfigur
-getValidMoves(piece: Piece): Array<number[]> {
-    const currentEnemyColor: string = isWhitesMove ? "black" : "white";
-    const currentPlayerColor: string = isWhitesMove ? "white" : "black";
+    // Diese Methode ermittelt die gültigen Züge für eine Schachfigur
+    getValidMoves(piece: Piece): Array<number[]> {
+        const currentEnemyColor: string = isWhitesMove ? "black" : "white";
+        const currentPlayerColor: string = isWhitesMove ? "white" : "black";
 
-    const enemyPieces = _piecesList[currentEnemyColor];
-    const [kingX, kingY] = [_king[currentPlayerColor].x, _king[currentPlayerColor].y];
-    const [startX, startY] = [piece.x, piece.y];
+        const enemyPieces = _piecesList[currentEnemyColor];
+        const [kingX, kingY] = [_king[currentPlayerColor].x, _king[currentPlayerColor].y];
+        const [startX, startY] = [piece.x, piece.y];
 
-    const validMoves: Array<number[]> = [];
+        const validMoves: Array<number[]> = [];
 
-    // muss vor einer änderung von isAttackable gespeichert werden
-    const possibleMoves: Array<number[]> = piece.possibleMoves; 
+        const possibleMoves: Array<number[]> = piece.possibleMoves;
 
-    _king[currentPlayerColor].isAttackable = true;
+        _king[currentPlayerColor].isAttackable = true;
 
-    for (const [pieceX, pieceY] of possibleMoves) {
-        // wenn eine Figur angegriffen wird, wird diese später übersprungen
-        let attackablePiece: Piece | false = getPieceAt(pieceX, pieceY);
-        
-        // summuliert ein Zug aus der possibleMoves Array
-        this.simulateMove(piece, pieceX, pieceY);
+        for (const [pieceX, pieceY] of possibleMoves) {
+            let attackablePiece: Piece | false = getPieceAt(pieceX, pieceY);
 
-        let isValidMove: boolean = true; 
+            this.simulateMove(piece, pieceX, pieceY);
 
-        for (const enemyPiece of enemyPieces) {
-            if (attackablePiece !== enemyPiece) { // hier wird die geschlagende Figur übersprungen, sie kann ja nicht mehr schlagen
-                if (enemyPiece.possibleMoves
-                    .some(([x, y]) => x === kingX && y === kingY)) { // wenn irgendein möglicher Angriff die Position des Königs entspricht, ist es kein gültiger Zug
-                        isValidMove = false; 
-                        break;
+            let isValidMove: boolean = true;
+
+            if (piece === _king[currentPlayerColor]) {
+                // Prüfe, ob der König nicht in einem bedrohten Feld landet
+                if (enemyPieces
+                    .some(enemyPiece => enemyPiece.possibleMoves
+                        // überprüft nur angreifende Figur mit gegnerische Angriffskoordinaten, da König die angreifende Figur ist
+                        .some(([x, y]) => x === pieceX && y === pieceY))) {
+                    isValidMove = false;
                 }
+            } else {
+                // Überprüfe, ob irgendein Zug die Position des Königs bedroht
+                for (const enemyPiece of enemyPieces) {
+                    if (attackablePiece !== enemyPiece) {
+                        if (enemyPiece.possibleMoves.some(([x, y]) => x === kingX && y === kingY)) {
+                            isValidMove = false;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (isValidMove) {
+                validMoves.push([pieceX, pieceY]);
             }
         }
 
-        if (isValidMove) {
-            validMoves.push([pieceX, pieceY]); // wenn gültig darf füge es zu den validMoves hinzu
-        } 
+        this.simulateMove(piece, startX, startY);
+        _king[currentPlayerColor].isAttackable = false;
+
+        return validMoves;
     }
-    this.simulateMove(piece, startX, startY); // zuruecksetzen
-    _king[currentPlayerColor].isAttackable = false; // zuruecksetzen
-    return validMoves;
-}
-    
+
+
 
 
     simulateMove(piece: Piece, x: number, y: number): void {
         [piece.x, piece.y] = [x, y];
     }
-
-    /*
-        --!> Herangehensweise für die Prävention von ungültigen Zügen <!--
-
-    ## König Figur bewegt sich:
-
-    Der pieceHandler selektiert den König.
-    Der König soll angreifbar gemacht werden, während die gegnerischen Figuren nicht angreifbar sein sollen. (Da diese auf ihre angreifbarkeit überprüft werden)
-    Der ausgewählte König (vom pieceHandler) wird zu allen möglichen Positionen geschickt.
-    nach jeder Positionsänderung: (Es sollen mehrere Rückgaben stattfinden zu den jeweiligen möglichen Positionen gehöhren, daher wird ein foreach-Loop verwendet und keine for...of-Schleife.)
-    	bekomme alle möglichen angrifspositionen von den gegnerischen Figuren
-    	gucke ob irgendeine angriffsposition die des bewegten Königs entspricht
-    		Falls ja: wird false zurückgegeben
-    		sonst: wird true zurückgegeben und die position wird als möglicher Zug makiert
-
-    ## Andere Figur bewegt sich: ***
-
-    Der pieceHandler selektiert eine Figur.
-    Der König soll angreifbar gemacht werden, während die gegnerischen Figuren nicht angreifbar sein sollen. (Da diese überprüft werden)
-    Die ausgewählte Figur (vom pieceHandler) wird zu allen möglichen Positionen geschickt.
-    nach jeder Positionsänderung: (Es sollen mehrere Rückgaben stattfinden zu den jeweiligen möglichen Positionen gehöhren, daher wird ein foreach-Loop verwendet und keine for...of-Schleife.)
-    	bekomme alle möglichen angrifspositionen von den gegnerischen Figuren
-    	gucke ob irgendeine angriffsposition die des eignene Königs entspricht
-    		Falls ja: wird false zurückgegeben
-    		sonst: wird true zurückgegeben und die position wird als möglicher Zug makiert
-    */
+    
     get checkForCheck(): boolean {
         const currentEnemyColor: string = isWhitesMove ? "black" : "white";
         const currentPlayerColor: string = isWhitesMove ? "white" : "black";

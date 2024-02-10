@@ -23,15 +23,15 @@ export class GameBoard {
                 button.set_vexpand(true);
 
                 const context: Gtk.StyleContext = button.get_style_context();
-                
+
                 const tileClass: string = (col % 2 === row % 2) ? 'dark_tile' : 'light_tile';
 
-                const borderClass: string = 
+                const borderClass: string =
                     (col === 0 && row === 0) ? 'border_tl' :
-                    (col === 7 && row === 0) ? 'border_tr' :
-                    (col === 0 && row === 7) ? 'border_bl' :
-                    (col === 7 && row === 7) ? 'border_br' :
-                    'no_border';
+                        (col === 7 && row === 0) ? 'border_tr' :
+                            (col === 0 && row === 7) ? 'border_bl' :
+                                (col === 7 && row === 7) ? 'border_br' :
+                                    'no_border';
 
                 context.add_class(tileClass);
                 context.add_class(borderClass);

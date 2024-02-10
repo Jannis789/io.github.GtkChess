@@ -9,7 +9,7 @@
 }
 
 .dark_tile:hover, .light_tile:hover {
-  box-shadow: inset 1000px 200px 5px 0px rgba(111, 87, 87, 0.3);
+  box-shadow: inset 1000px 200px 5px 0px rgba(90, 101, 161, 0.3);
 }
 
 .no_border {
