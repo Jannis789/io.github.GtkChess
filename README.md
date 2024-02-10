@@ -1,10 +1,17 @@
-# GNOME Typescript Template
+## Gtk Chess 
 
-A template that provides the basic foundations for GNOME applications written in Typescript.
+## TODO:
 
-![The main view of the Typescript Template application.](./data/screenshots/screenshot-1.png)
+* Add en passant
+* Add castling
+* Add the ability to upgrade pawns
+* UI controls
+* Check functionality of movement behavior
 
-## Template Features
+
+## Functions of the Template
+
+### Source: [Link](https://gitlab.gnome.org/BrainBlasted/gnome-typescript-template)
 
 This template provides:
 
