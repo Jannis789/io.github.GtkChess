@@ -27,24 +27,24 @@ export class GameLoop {
     }
 
     pieceHandler(piece: Piece): void {
+        // Piece is allready cached
+        if (this.currentPiece && this.currentPiece === piece) {
+            return;
+        }
         // if a selection exists, revert it
         if (this.currentPiece) {
-            const possibleMoves: Array<number[]> = this.getValidMoves(this.currentPiece);
-            possibleMoves.forEach(([x, y]: number[]) => {
+            this.currentPossibleMoves.forEach(([x, y]: number[]) => {
                 this.revertHighlightedMove(x, y);
             });
         }
 
-        this.currentPiece = piece;                                                          // set piece as the current piece
+        this.currentPiece = piece; // Set the new piece as the current piece                                                    // set piece as the current piece
+        this.currentPossibleMoves = this.getValidMoves(piece); // store valid moves in currentPossibleMoves
 
         // highlight possible moves
-        const possibleMoves: Array<number[]> = this.getValidMoves(this.currentPiece);
-        possibleMoves.forEach(([x, y]: number[]) => {
+        this.currentPossibleMoves.forEach(([x, y]: number[]) => {
             this.highlightMove(x, y);
         });
-
-        // put possibleMoves in currentPossibleMoves
-        this.currentPossibleMoves = this.getValidMoves(piece);
     }
 
     tileHandler(x: number, y: number): void {
@@ -116,12 +116,12 @@ export class GameLoop {
         _king[currentPlayerColor].isAttackable = true;
 
         for (const [pieceX, pieceY] of possibleMoves) {
+
             let attackablePiece: Piece | false = getPieceAt(pieceX, pieceY);
 
             this.simulateMove(piece, pieceX, pieceY);
 
             let isValidMove: boolean = true;
-
             if (piece === _king[currentPlayerColor]) {
                 // Prüfe, ob der König nicht in einem bedrohten Feld landet
                 if (enemyPieces
@@ -147,6 +147,21 @@ export class GameLoop {
             }
         }
 
+        if (piece.constructor.name === "King") {
+            (console as any).log(true);
+            const playerLeftRook = isWhitesMove ? getPieceAt(0,7) : getPieceAt(0,0);
+            const playerRightRook = isWhitesMove ? getPieceAt(7,7) : getPieceAt(7,0);
+            if (playerLeftRook) {
+                // Feld 1 bis inklusive 3 darf nicht besetzt sein
+                for (let i = 1 ; i <= 3 ; i++) {
+                }
+            }
+            if (playerRightRook) {
+                // Feld 5 bis inklusive 6 darf nicht besetzt sein
+                for (let i = 5 ; i <= 6 ; i++) {
+                }
+            }
+        }
         this.simulateMove(piece, startX, startY);
         _king[currentPlayerColor].isAttackable = false;
 

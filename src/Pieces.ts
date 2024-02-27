@@ -194,9 +194,14 @@ get possibleMoves(): Array<number[]> {
     const rightAttackPiece = getPieceAt(this.x + 1, newY);
     const leftAttackPiece = getPieceAt(this.x - 1, newY);
 
-    if ((rightAttackPiece && rightAttackPiece.isAttackable) || (leftAttackPiece && leftAttackPiece.isAttackable)) {
-        possibleMoves.push([this.x + 1, newY], [this.x - 1, newY]);
+    if (rightAttackPiece && rightAttackPiece.isAttackable) {
+        possibleMoves.push([this.x + 1, newY]);
     }
+    
+    if (leftAttackPiece && leftAttackPiece.isAttackable) {
+        possibleMoves.push([this.x - 1, newY]);
+    }
+    
     return possibleMoves;
 }
 
