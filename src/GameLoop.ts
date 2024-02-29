@@ -49,26 +49,31 @@ export class GameLoop {
         });
     }
 
+    performCastling(x: number, y: number): void {
+        this.castlingPositions.forEach(([castlingX, castlingY]: number[]) => {
+            if (castlingX === x && castlingY === y && _king[isWhitesMove ? "white" : "black"] === this.currentPiece) {
+                const leftRook: Piece | false = getPieceAt(0, castlingY)
+                const rightRook: Piece | false = getPieceAt(7, castlingY);
+                if (castlingX === 1 && leftRook instanceof Rook) {
+                    this.movePieceTo(leftRook, 2, castlingY);
+                    leftRook.isMoved = true;
+                }
+                if (castlingX === 6 && rightRook instanceof Rook) {
+                    this.movePieceTo(rightRook, 5, castlingY);
+                    rightRook.isMoved = true;
+                }
+                _king[isWhitesMove ? "white" : "black"].isMoved = true;
+            }
+        });
+    
+    }
+
     tileHandler(x: number, y: number): void {
         if (this.currentPossibleMoves.length > 0) {
             for (const [possibleX, possibleY] of this.currentPossibleMoves) {
                 if (this.currentPiece && x === possibleX && y === possibleY) {
                     if (this.castlingPositions) { // castling validation
-                        this.castlingPositions.forEach(([castlingX, castlingY]: number[]) => {
-                            if (castlingX === x && castlingY === y && _king[isWhitesMove ? "white" : "black"] === this.currentPiece) {
-                                const leftRook: Piece | false = getPieceAt(0, castlingY)
-                                const rightRook: Piece | false = getPieceAt(7, castlingY);
-                                if (castlingX === 1 && leftRook instanceof Rook) {
-                                    this.movePieceTo(leftRook, 2, castlingY);
-                                    leftRook.isMoved = true;
-                                }
-                                if (castlingX === 6 && rightRook instanceof Rook) {
-                                    this.movePieceTo(rightRook, 5, castlingY);
-                                    rightRook.isMoved = true;
-                                }
-                                _king[isWhitesMove ? "white" : "black"].isMoved = true;
-                            }
-                        });
+                        this.performCastling(x, y);
                     }
                     this.movePieceTo(this.currentPiece, x, y);
                     this.changeTurn();
@@ -88,7 +93,7 @@ export class GameLoop {
         }
 
         // if piece is instance of Pawn, set isMoved to true to change the movement behavior
-        if (piece instanceof Pawn && piece.isMoved === false) {
+        if (piece instanceof Pawn && !piece.isMoved) {
             piece.isMoved = true;
         }
 
@@ -119,6 +124,30 @@ export class GameLoop {
         }
     }
 
+    getCastlingPositions(piece: Piece): Array<number[]> {
+        const validMoves: Array<number[]> = [];
+        const currentPlayerColor: string = isWhitesMove ? "white" : "black";
+
+        if (piece === _king[currentPlayerColor] && !_king[currentPlayerColor].isMoved) {
+            const playerLeftRook: Piece | false = isWhitesMove ? getPieceAt(0,7) : getPieceAt(0,0);
+            const playerRightRook: Piece | false = isWhitesMove ? getPieceAt(7,7) : getPieceAt(7,0);
+
+            if (playerLeftRook instanceof Rook && !playerLeftRook.isMoved) {
+                if ([1, 2, 3].every(i => !getPieceAt(i, piece.y))) {
+                    validMoves.push([1, piece.y]);
+                    this.castlingPositions.push([1, piece.y]);
+                }
+            }
+            if (playerRightRook instanceof Rook && !playerRightRook.isMoved) {
+                if ([5, 6].every(i => !getPieceAt(i, piece.y))) {
+                    validMoves.push([6, piece.y]);
+                    this.castlingPositions.push([6, piece.y]);
+                }
+            }
+        }
+        (console as any).log(validMoves);
+        return validMoves;
+    }
 
     // Diese Methode ermittelt die gültigen Züge für eine Schachfigur
     getValidMoves(piece: Piece): Array<number[]> {
@@ -129,28 +158,9 @@ export class GameLoop {
         const [kingX, kingY]: number[] = [_king[currentPlayerColor].x, _king[currentPlayerColor].y];
         const [startX, startY]: number[] = [piece.x, piece.y];
 
-        const validMoves: Array<number[]> = [];
+        const validMoves: Array<number[]> = []; // bekomme die Castling-Positionen oder leere Array
 
-        // gebe richtige castling position wieder
-        if (piece === _king[currentPlayerColor] && !_king[currentPlayerColor].isMoved) {
-            const playerLeftRook: Piece | false = isWhitesMove ? getPieceAt(0,7) : getPieceAt(0,0);
-            const playerRightRook: Piece | false = isWhitesMove ? getPieceAt(7,7) : getPieceAt(7,0);
-
-            if (playerLeftRook instanceof Rook && playerLeftRook.isMoved === false) {
-                if ([1, 2, 3].every(i => !getPieceAt(i, piece.y))) {
-                    validMoves.push([1, piece.y]);
-                    this.castlingPositions.push([1, piece.y]);
-                }
-            }
-            if (playerRightRook instanceof Rook && playerRightRook.isMoved === false) {
-                if ([5, 6].every(i => !getPieceAt(i, piece.y))) {
-                    validMoves.push([6, piece.y]);
-                    this.castlingPositions.push([6, piece.y]);
-                }
-            }
-        }
-
-        const possibleMoves: Array<number[]> = piece.possibleMoves;
+        const possibleMoves: Array<number[]> = [...piece.possibleMoves, ...this.getCastlingPositions(piece)];
 
         _king[currentPlayerColor].isAttackable = true;
 
@@ -161,27 +171,25 @@ export class GameLoop {
             this.simulateMove(piece, pieceX, pieceY);
 
             let isValidMove: boolean = true;
-            if (piece === _king[currentPlayerColor]) {
-                // Prüfe, ob der König nicht in einem bedrohten Feld landet
-                if (enemyPieces
+            if (piece !== _king[currentPlayerColor]) { // für alle anderen Figuren bis auf den König
+                isValidMove = !enemyPieces
+                // muss ignoriert werden, da in jener Iteration die Figur geschlagen sein wird
+                .filter(enemyPiece => attackablePiece !== enemyPiece)
+                // keine der gegnerischen möglichen Positionen sollen zum König führen 
+                .some(enemyPiece => enemyPiece.possibleMoves
+                    .some(([x, y]) => x === kingX && y === kingY));
+            } else { // nur für den König
+
+                isValidMove = !enemyPieces
+                    // .filter(enemyPiece => attackablePiece !== enemyPiece) // optional da geschlagene Figur vom König (welchen es zum beschützen gilt) geschlagen wird
+                    // keine der gegnerischen Züge soll den König besiegen können
                     .some(enemyPiece => enemyPiece.possibleMoves
-                        // überprüft nur angreifende Figur mit gegnerische Angriffskoordinaten, da König die angreifende Figur ist
-                        .some(([x, y]) => x === pieceX && y === pieceY))) {
-                    isValidMove = false;
-                }
-            } else {
-                // Überprüfe, ob irgendein Zug die Position des Königs bedroht
-                for (const enemyPiece of enemyPieces) {
-                    if (attackablePiece !== enemyPiece && 
-                        enemyPiece.possibleMoves
-                            .some(([x, y]) => x === kingX && y === kingY)) {
-                                isValidMove = false;
-                                break;
-                    }
-                }
+                        .some(([x, y]) => x === pieceX && y === pieceY));
+
             }
 
             if (isValidMove) {
+                
                 validMoves.push([pieceX, pieceY]);
             }
         }
