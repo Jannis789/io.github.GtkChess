@@ -158,7 +158,7 @@ export class GameLoop {
         const [kingX, kingY]: number[] = [_king[currentPlayerColor].x, _king[currentPlayerColor].y];
         const [startX, startY]: number[] = [piece.x, piece.y];
 
-        const validMoves: Array<number[]> = []; // bekomme die Castling-Positionen oder leere Array
+        const validMoves: Array<number[]> = [];
 
         const possibleMoves: Array<number[]> = [...piece.possibleMoves, ...this.getCastlingPositions(piece)];
 
