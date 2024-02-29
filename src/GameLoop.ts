@@ -1,11 +1,12 @@
 // GameLoop.ts
-import { _piecesList, _king, Piece, Pawn, Rook, getPieceAt, setPieceAt } from "./Pieces.js";
+import { _piecesList, _king, Rook, Piece, getPieceAt, setPieceAt } from "./Pieces.js";
 import { GameBoard } from "./GameBoard.js";
 import { GameLoopInstance } from "./ChessGame.js";
 import Gtk from 'gi://Gtk?version=4.0';
+import { STOCK_PAGE_SETUP } from "gi-types/gtk3.js";
 
 
-let isWhitesMove: boolean = true;
+export let isWhitesMove: boolean = true;
 
 export function currentPressedButtonLocation(coordinate: Record<string, number>): void {
     const piece = getPieceAt(coordinate.x, coordinate.y);
@@ -19,12 +20,10 @@ export function currentPressedButtonLocation(coordinate: Record<string, number>)
 export class GameLoop {
     private currentPossibleMoves: Array<number[]>;
     private currentPiece: Piece | false;
-    private isInCheck: boolean;
     private castlingPositions: Array<number[]>;
     constructor() {
         this.currentPossibleMoves = [];
         this.castlingPositions = [];
-        this.isInCheck = false;
         this.currentPiece = false;
     }
 
@@ -93,7 +92,7 @@ export class GameLoop {
         }
 
         // if piece is instance of Pawn, set isMoved to true to change the movement behavior
-        if (piece instanceof Pawn && !piece.isMoved) {
+        if (piece instanceof Piece && !piece.isMoved) {
             piece.isMoved = true;
         }
 
@@ -110,9 +109,6 @@ export class GameLoop {
 
         // clear currentPossibleMoves
         this.currentPossibleMoves = [];
-        if (this.checkForCheck) {
-            this.isInCheck = true;
-        }
     }
 
     changeTurn(): void {
@@ -122,31 +118,6 @@ export class GameLoop {
                 piece.toggleAttackability();
             }
         }
-    }
-
-    getCastlingPositions(piece: Piece): Array<number[]> {
-        const validMoves: Array<number[]> = [];
-        const currentPlayerColor: string = isWhitesMove ? "white" : "black";
-
-        if (piece === _king[currentPlayerColor] && !_king[currentPlayerColor].isMoved) {
-            const playerLeftRook: Piece | false = isWhitesMove ? getPieceAt(0,7) : getPieceAt(0,0);
-            const playerRightRook: Piece | false = isWhitesMove ? getPieceAt(7,7) : getPieceAt(7,0);
-
-            if (playerLeftRook instanceof Rook && !playerLeftRook.isMoved) {
-                if ([1, 2, 3].every(i => !getPieceAt(i, piece.y))) {
-                    validMoves.push([1, piece.y]);
-                    this.castlingPositions.push([1, piece.y]);
-                }
-            }
-            if (playerRightRook instanceof Rook && !playerRightRook.isMoved) {
-                if ([5, 6].every(i => !getPieceAt(i, piece.y))) {
-                    validMoves.push([6, piece.y]);
-                    this.castlingPositions.push([6, piece.y]);
-                }
-            }
-        }
-        (console as any).log(validMoves);
-        return validMoves;
     }
 
     // Diese Methode ermittelt die gültigen Züge für eine Schachfigur
@@ -160,7 +131,11 @@ export class GameLoop {
 
         const validMoves: Array<number[]> = [];
 
-        const possibleMoves: Array<number[]> = [...piece.possibleMoves, ...this.getCastlingPositions(piece)];
+        const possibleMoves: Array<number[]> = piece.possibleMoves;
+
+        if (this.currentPiece === _king[currentPlayerColor]) {
+            this.castlingPositions = _king[currentPlayerColor].getCastlingPositions(piece);
+        }
 
         _king[currentPlayerColor].isAttackable = true;
 
@@ -204,18 +179,6 @@ export class GameLoop {
         [piece.x, piece.y] = [x, y];
     }
     
-    get checkForCheck(): boolean {
-        const currentEnemyColor: string = isWhitesMove ? "black" : "white";
-        const currentPlayerColor: string = isWhitesMove ? "white" : "black";
-        for (const piece of _piecesList[currentPlayerColor]) {
-            for (const [possibleX, possibleY] of piece.possibleMoves) {
-                if ((possibleX === _king[currentEnemyColor].x && possibleY === _king[currentEnemyColor].y)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
     highlightMove(x: number, y: number): void {
         const button: Gtk.Button = GameBoard.getTile(x, y);
         const context: Gtk.StyleContext = button.get_style_context();

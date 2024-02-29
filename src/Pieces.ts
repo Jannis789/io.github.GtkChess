@@ -3,6 +3,7 @@ import Gtk from 'gi://Gtk?version=4.0';
 import Gio from 'gi://Gio';
 import GdkPixbuf from 'gi://GdkPixbuf';
 import { GameBoard } from "./GameBoard.js";
+import { isWhitesMove } from "./GameLoop.js";
 
 export const _piecesList: Record<string, Piece[]> = {
     white: [],
@@ -30,14 +31,14 @@ export function setPieceAt(pieceType: string, x: number, y: number): void {
 
 export class InitializePieces {
     private chessBoard: Array<Array<string | null>> = [
-        ["r", "n", "b", "q", "k", "b", "n", "r"],
-        ["p", "p", "p", "p", "p", "p", "p", "p"],
+        [ "r",  "n",  "b",  "q",  "k",  "b",  "n",  "r"],
+        [ "p",  "p",  "p",  "p",  "p",  "p",  "p",  "p"],
         [null, null, null, null, null, null, null, null],
         [null, null, null, null, null, null, null, null],
         [null, null, null, null, null, null, null, null],
         [null, null, null, null, null, null, null, null],
-        ["P", "P", "P", "P", "P", "P", "P", "P"],
-        ["R", "N", "B", "Q", "K", "B", "N", "R"]
+        [ "P",  "P",  "P",  "P",  "P",  "P",  "P",  "P"],
+        [ "R",  "N",  "B",  "Q",  "K",  "B",  "N",  "R"]
     ];
 
     private letterTranslate: Record<string, string> = {
@@ -117,11 +118,13 @@ export class Piece {
     public x: number;
     public y: number
     public isAttackable: boolean;
+    public isMoved: boolean;
     constructor(color: string, x: number, y: number) {
         this.color = color;
         this.x = x;
         this.y = y;
         this.isAttackable = false;
+        this.isMoved = false;
     }
 
     isOutsideBoard(x: number, y: number): boolean {
@@ -170,7 +173,6 @@ export class Piece {
 }
 
 export class Pawn extends Piece {
-    public isMoved: boolean = false;
     constructor(color: string, x: number, y: number) {
         super(color, x, y);
         this.color = color;
@@ -209,7 +211,6 @@ get possibleMoves(): Array<number[]> {
 }
 
 export class Rook extends Piece {
-    public isMoved: boolean = false;
     private rookMoves: Array<number[]>;
     constructor(color: string, x: number, y: number) {
         super(color, x, y);
@@ -265,14 +266,34 @@ class Queen extends Piece {
     }
 }
 
-class King extends Piece {
-    public isMoved: boolean;
+export class King extends Piece {
     private kingMoves: Array<number[]>;
     constructor(color: string, x: number, y: number) {
         super(color, x, y);
-        this.isMoved = false;
         this.kingMoves = [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]];
         (color === "white") ? _king.white = this : _king.black = this;
+    }
+
+    getCastlingPositions(piece: Piece): Array<number[]> {
+        const validMoves: Array<number[]> = [];
+
+        if (!this.isMoved) {
+            const playerLeftRook: Piece | false = isWhitesMove ? getPieceAt(0,7) : getPieceAt(0,0);
+            const playerRightRook: Piece | false = isWhitesMove ? getPieceAt(7,7) : getPieceAt(7,0);
+
+            if (playerLeftRook instanceof Rook && !playerLeftRook.isMoved) {
+                if ([1, 2, 3].every(i => !getPieceAt(i, piece.y))) {
+                    validMoves.push([1, piece.y]);
+                }
+            }
+            if (playerRightRook instanceof Rook && !playerRightRook.isMoved) {
+
+                if ([5, 6].every(i => !getPieceAt(i, piece.y))) {
+                    validMoves.push([6, piece.y]);
+                }
+            }
+        }
+        return validMoves;
     }
 
     get possibleMoves(): Array<number[]> {
@@ -284,6 +305,7 @@ class King extends Piece {
                 possibleMoves.push([newX, newY]);
             }
         });
-        return possibleMoves;
+        return [...possibleMoves, ...this.getCastlingPositions(this)];
     }
+    
 }
