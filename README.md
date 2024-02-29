@@ -3,11 +3,8 @@
 ## TODO:
 
 * Add en passant
-* Add castling
 * Add the ability to upgrade pawns
 * UI controls
-* Check functionality of movement behavior
-
 
 ## Functions of the Template
 

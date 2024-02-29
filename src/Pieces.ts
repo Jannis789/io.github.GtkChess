@@ -1,3 +1,4 @@
+// Pieces.ts
 import Gtk from 'gi://Gtk?version=4.0';
 import Gio from 'gi://Gio';
 import GdkPixbuf from 'gi://GdkPixbuf';
@@ -36,7 +37,7 @@ export class InitializePieces {
         [null, null, null, null, null, null, null, null],
         [null, null, null, null, null, null, null, null],
         ["P", "P", "P", "P", "P", "P", "P", "P"],
-        ["R", "N", "B", "Q", "K", "B", "N", "R"]
+        ["R", null, null, null, "K", null, null, "R"]
     ];
 
     private letterTranslate: Record<string, string> = {
@@ -207,7 +208,8 @@ get possibleMoves(): Array<number[]> {
 
 }
 
-class Rook extends Piece {
+export class Rook extends Piece {
+    public isMoved: boolean = false;
     private rookMoves: Array<number[]>;
     constructor(color: string, x: number, y: number) {
         super(color, x, y);
@@ -264,9 +266,11 @@ class Queen extends Piece {
 }
 
 class King extends Piece {
+    public isMoved: boolean;
     private kingMoves: Array<number[]>;
     constructor(color: string, x: number, y: number) {
         super(color, x, y);
+        this.isMoved = false;
         this.kingMoves = [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]];
         (color === "white") ? _king.white = this : _king.black = this;
     }

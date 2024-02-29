@@ -1,3 +1,4 @@
+// main.ts
 import Adw from 'gi://Adw';
 import Gio from 'gi://Gio';
 import GObject from 'gi://GObject';

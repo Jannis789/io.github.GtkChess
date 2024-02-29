@@ -1,3 +1,4 @@
+// GameBoard.ts
 import Gtk from 'gi://Gtk?version=4.0';
 import { Window } from "./window.js";
 import { currentPressedButtonLocation } from "./GameLoop.js";
