@@ -35,10 +35,10 @@ export class InitializePieces {
         [ "p",  "p",  "p",  "p",  "p",  "p",  "p",  "p"],
         [null, null, null, null, null, null, null, null],
         [null, null, null, null, null, null, null, null],
-        [null, null, null, null, "r", null, null, null],
-        [null, null, null, "r", "r", null, null, null],
-        [ "P",  "P",  "P",  "P",  null,  "P",  "P",  "P"],
-        [ "R",  "N",  "B",  null,  null, "K",  "R",  "R"]
+        [null, null, null, null, null, null, null, null],
+        [null, null, null, null, null, null, null, null],
+        [ "P",  "P",  "P",  "P",  "P",  "P",  "P",  "P"],
+        [ "R",  "N",  "B",  "Q",  "K",  "B",  "N",  "R"]
     ];
 
     private letterTranslate: Record<string, string> = {
