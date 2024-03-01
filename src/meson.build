@@ -3,6 +3,10 @@ gnome = import('gnome')
 sources = files(
   'main.ts',
   'window.ts',
+  'Pieces.ts',
+  'GameLoop.ts',
+  'GameBoard.ts',
+  'ChessGame.ts'
 )
 
 tsc_out = meson.project_build_root() / 'tsc-out'

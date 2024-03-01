@@ -74,18 +74,10 @@ export class GameLoop {
             this.performCastling(x, y);
         }
         this.movePieceTo(currentPiece, x, y);
-        this.validateCheck(currentPiece);
-        this.changeTurn();
-
-    }
-
-    validateCheck(currentPiece: Piece): void {
         const enemyKing = _king[isWhitesMove ? "black" : "white"];
-        const checked = currentPiece.possibleMoves
-                        .some(([x,y]) => enemyKing.x === x && 
-                        enemyKing.y === y) ? true : false;
-
-        if (checked) {
+        const checked = currentPiece.possibleMoves.some(([x,y]) => enemyKing.x === x && enemyKing.y === y);
+        this.changeTurn();
+        if (checked) { // wird erst nach der nächsten Runde überprüft
             const playerPieces = _piecesList[isWhitesMove ? "white" : "black"];
             if (!playerPieces.some(piece => this.getValidMoves(piece).length !== 0)) {
                 (console as any).log("checkmate");
@@ -94,7 +86,7 @@ export class GameLoop {
             }
         }
     }
-
+    
     movePieceTo(piece: Piece, x: number, y: number): void {
         GameBoard.removeTile(piece.x, piece.y);                                             // remove old Piece
     
