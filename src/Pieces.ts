@@ -36,9 +36,9 @@ export class InitializePieces {
         [null, null, null, null, null, null, null, null],
         [null, null, null, null, null, null, null, null],
         [null, null, null, null, null, null, null, null],
-        [null, null, null, null, null, null, null, null],
-        [ "P",  "P",  "P",  "P",  "P",  "P",  "P",  "P"],
-        [ "R",  "N",  "B",  "Q",  "K",  "B",  "N",  "R"]
+        [null, null, null, "r", null, null, null, null],
+        [ "P",  "P",  "P",  "P",  null,  "P",  "P",  "P"],
+        [ "R",  "N",  "B",  "Q",  "K", null,  "N",  "R"]
     ];
 
     private letterTranslate: Record<string, string> = {
@@ -277,7 +277,7 @@ export class King extends Piece {
     getCastlingPositions(piece: Piece): Array<number[]> {
         const validMoves: Array<number[]> = [];
 
-        if (!this.isMoved) {
+        if (!this.isMoved && (this.color === "white" && this.x === 4 && this.y === 7) || (this.color === "black" && this.x === 4 && this.y === 0)) {
             const playerLeftRook: Piece | false = isWhitesMove ? getPieceAt(0,7) : getPieceAt(0,0);
             const playerRightRook: Piece | false = isWhitesMove ? getPieceAt(7,7) : getPieceAt(7,0);
 

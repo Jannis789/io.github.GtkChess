@@ -3,8 +3,6 @@ import { _piecesList, _king, Rook, Piece, getPieceAt, setPieceAt } from "./Piece
 import { GameBoard } from "./GameBoard.js";
 import { GameLoopInstance } from "./ChessGame.js";
 import Gtk from 'gi://Gtk?version=4.0';
-import { STOCK_PAGE_SETUP } from "gi-types/gtk3.js";
-
 
 export let isWhitesMove: boolean = true;
 
@@ -39,9 +37,9 @@ export class GameLoop {
             });
         }
 
-        this.currentPiece = piece; // Set the new piece as the current piece                                                    // set piece as the current piece
+        this.currentPiece = piece; // Set the new piece as the current piece                             
         this.currentPossibleMoves = this.getValidMoves(piece); // store valid moves in currentPossibleMoves
-
+    
         // highlight possible moves
         this.currentPossibleMoves.forEach(([x, y]: number[]) => {
             this.highlightMove(x, y);
@@ -50,7 +48,8 @@ export class GameLoop {
 
     performCastling(x: number, y: number): void {
         this.castlingPositions.forEach(([castlingX, castlingY]: number[]) => {
-            if (castlingX === x && castlingY === y && _king[isWhitesMove ? "white" : "black"] === this.currentPiece) {
+            const playerKing: Piece = _king[isWhitesMove ? "white" : "black"];
+            if (castlingX === x && castlingY === y && playerKing === this.currentPiece) {
                 const leftRook: Piece | false = getPieceAt(0, castlingY)
                 const rightRook: Piece | false = getPieceAt(7, castlingY);
                 if (castlingX === 1 && leftRook instanceof Rook) {
@@ -61,53 +60,62 @@ export class GameLoop {
                     this.movePieceTo(rightRook, 5, castlingY);
                     rightRook.isMoved = true;
                 }
-                _king[isWhitesMove ? "white" : "black"].isMoved = true;
+                playerKing.isMoved = true;
             }
         });
-    
     }
 
     tileHandler(x: number, y: number): void {
-        if (this.currentPossibleMoves.length > 0) {
-            for (const [possibleX, possibleY] of this.currentPossibleMoves) {
-                if (this.currentPiece && x === possibleX && y === possibleY) {
-                    if (this.castlingPositions) { // castling validation
-                        this.performCastling(x, y);
-                    }
-                    this.movePieceTo(this.currentPiece, x, y);
-                    this.changeTurn();
-                    return;
-                }
+        const currentPiece: Piece | false = this.currentPiece;
+        if (!currentPiece || !this.currentPossibleMoves.some(([possibleX, possibleY]) => possibleX === x && possibleY === y)) {
+            return;
+        }
+        if (this.castlingPositions) { // castling validation
+            this.performCastling(x, y);
+        }
+        this.movePieceTo(currentPiece, x, y);
+        this.validateCheck(currentPiece);
+        this.changeTurn();
+
+    }
+
+    validateCheck(currentPiece: Piece): void {
+        const enemyKing = _king[isWhitesMove ? "black" : "white"];
+        const checked = currentPiece.possibleMoves
+                        .some(([x,y]) => enemyKing.x === x && 
+                        enemyKing.y === y) ? true : false;
+
+        if (checked) {
+            const playerPieces = _piecesList[isWhitesMove ? "white" : "black"];
+            if (!playerPieces.some(piece => this.getValidMoves(piece).length !== 0)) {
+                (console as any).log("checkmate");
+            } else {
+                (console as any).log("check");
             }
         }
     }
 
-
     movePieceTo(piece: Piece, x: number, y: number): void {
         GameBoard.removeTile(piece.x, piece.y);                                             // remove old Piece
-        let attackedPiece: Piece | false = getPieceAt(x, y);
+    
+        const attackedPiece: Piece | false = getPieceAt(x, y);
+        
         if (attackedPiece) {
-            // entferne Instanz aus _piecesList
-            _piecesList[attackedPiece.color].splice(_piecesList[attackedPiece.color].indexOf(attackedPiece), 1);                                                           // Hier muss es eine bessere Lösung geben!
+            _piecesList[attackedPiece.color] = _piecesList[attackedPiece.color]
+                                               .filter((piece: Piece) => piece !== attackedPiece);
         }
-
-        // if piece is instance of Pawn, set isMoved to true to change the movement behavior
+    
         if (piece instanceof Piece && !piece.isMoved) {
             piece.isMoved = true;
         }
-
+    
         [piece.x, piece.y] = [x, y];                                                        // set new Coordinates
-        const pieceStr: string = piece.color + "_" + piece.constructor.name.toLowerCase();  // cunstructs the image path
+        const pieceStr: string = `${piece.color}_${piece.constructor.name.toLowerCase()}`;  // constructs the image path
         setPieceAt(pieceStr, x, y);                                                         // sets the image to the new coordinates
-
-        // revert highlighted moves
-        if (this.currentPossibleMoves.length > 0) {
-            this.currentPossibleMoves.forEach(([possibleX, possibleY]: number[]) => {
-                this.revertHighlightedMove(possibleX, possibleY);
-            });
-        }
-
-        // clear currentPossibleMoves
+    
+        this.currentPossibleMoves.forEach(([possibleX, possibleY]: number[]) => {
+            this.revertHighlightedMove(possibleX, possibleY);
+        });
         this.currentPossibleMoves = [];
     }
 
@@ -164,7 +172,6 @@ export class GameLoop {
             }
 
             if (isValidMove) {
-                
                 validMoves.push([pieceX, pieceY]);
             }
         }
